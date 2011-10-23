@@ -104,7 +104,7 @@ applyPatch origFilename patchFilename = do
     case ec of
         ExitSuccess -> return ()
         ExitFailure _ ->
-            hPutStrLn stderr "Failed patching the .cabal file" >> exitFailure
+            hPutStrLn stderr ("Failed patching "++origFilename++" with "++patchFilename) >> exitFailure
 
 applyPatchIfExist origFilename patchFilename =
     fileExist patchFilename >>= flip when (applyPatch origFilename patchFilename)
