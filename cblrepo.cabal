@@ -45,4 +45,8 @@ executable tests
     else
         buildable: False
 
+Source-Repository head
+    Type:                 git
+    Location:             https://github.com/magthe/cblrepo.git
+
 -- vim: set tw=0 :
