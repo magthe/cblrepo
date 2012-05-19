@@ -79,7 +79,7 @@ data Cmds
     | BumpPkgs { appDir :: FilePath, dbFile :: FilePath, dryRun :: Bool, inclusive :: Bool, pkgs :: [String] }
     | Sync { appDir :: FilePath }
     | Versions { appDir :: FilePath, pkgs :: [String] }
-    | CmdListPkgs { appDir :: FilePath, dbFile :: FilePath, listGhc :: Bool, listDistro :: Bool, noListRepo :: Bool }
+    | CmdListPkgs { appDir :: FilePath, dbFile :: FilePath, listGhc :: Bool, listDistro :: Bool, listRename :: Bool, noListRepo :: Bool }
     | Updates { appDir :: FilePath, dbFile :: FilePath, idxStyle :: Bool }
     | Urls { appDir :: FilePath, pkgVers :: [(String, String)] }
     | PkgBuild { appDir :: FilePath, dbFile :: FilePath, patchDir :: FilePath, pkgs :: [String] }
@@ -92,7 +92,7 @@ defBuildPkgs =  BuildPkgs "" "" []
 defBumpPkgs =  BumpPkgs "" "" False False []
 defSync =  Sync ""
 defVersions =  Versions "" []
-defCmdListPkgs =  CmdListPkgs "" "" False False False
+defCmdListPkgs =  CmdListPkgs "" "" False False False False
 defUpdates =  Updates "" "" False
 defUrls =  Urls "" []
 defPkgBuild =  PkgBuild "" "" "" []

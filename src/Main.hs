@@ -82,6 +82,7 @@ cmdListPkgs = record defCmdListPkgs
     [ argAppDir, argDbFile
     , listGhc := False += explicit += name "g" += name "ghc" += help "list ghc packages"
     , listDistro := False += explicit += name "d" += name "distro" += help "list distro packages"
+    , listRename := False += explicit += name "rename" += help "list renamed packages"
     , noListRepo := False += explicit += name "no-repo" += help "do not list repo packages"
     ] += name "list" += help "list packages in repo"
 
