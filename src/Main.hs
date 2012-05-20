@@ -28,6 +28,7 @@ import Urls
 import PkgBuild
 import ConvertDB
 import Remove
+import Rename
 
 import Paths_cblrepo
 
@@ -109,6 +110,12 @@ cmdRemovePkg = record defRemovePkg
     , pkgs := def += args += typ "PKG"
     ] += name "rm" += help "remove packages"
 
+cmdRenamePkg = record defRenamePkg
+    [ argAppDir, argDbFile, argDryRun
+    , cmdRenameClearPkgs := def += explicit += name "c" += name "clear" += typ "PKG" += help "clear rename (multiple)"
+    , cmdRenamePkgs := def += args += typ "PKG,RENAME"
+    ] += name "rename" += help "rename packages"
+
 cmds = cmdArgsMode_ $ modes_
     [ cmdAddPkg
     , cmdBuildPkgs
@@ -121,6 +128,7 @@ cmds = cmdArgsMode_ $ modes_
     , cmdPkgBuild
     , cmdConvertDb
     , cmdRemovePkg
+    , cmdRenamePkg
     ]
     += program progName
     += summary (progName ++ " v" ++ (display version))
@@ -145,3 +153,4 @@ main = do
             PkgBuild {} -> runCommand c' pkgBuild
             ConvertDb {} -> runCommand c' convertDb
             RemovePkg {} -> runCommand c' remove
+            RenamePkg {} -> runCommand c' rename

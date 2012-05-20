@@ -24,11 +24,11 @@ executable cblrepo
     main-is: Main.hs
     other-modules: Util.Misc PkgDB Add BumpPkgs BuildPkgs Sync
         Versions Updates ListPkgs Urls PkgBuild Util.Translation
-        OldPkgDB ConvertDB Remove
-    build-depends: base ==4.5.*, cmdargs ==0.9.*, filepath ==1.3.*,
-        directory ==1.1.*, Cabal ==1.14.*, json ==0.5.*,
-        bytestring ==0.9.*, tar ==0.4.*, zlib ==0.5.*, mtl ==2.0.*,
-        process ==1.1.*, Unixutils ==1.50.*, unix ==2.5.*,
+        OldPkgDB ConvertDB Remove Rename
+    build-depends: base ==4.5.*, containers ==0.4.*, cmdargs ==0.9.*,
+        filepath ==1.3.*, directory ==1.1.*, Cabal ==1.14.*,
+        json ==0.5.*, bytestring ==0.9.*, tar ==0.4.*, zlib ==0.5.*,
+        mtl ==2.0.*, process ==1.1.*, Unixutils ==1.50.*, unix ==2.5.*,
         ansi-wl-pprint ==0.6.*
 
 Source-Repository head

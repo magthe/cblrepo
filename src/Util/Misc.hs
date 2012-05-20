@@ -85,6 +85,7 @@ data Cmds
     | PkgBuild { appDir :: FilePath, dbFile :: FilePath, patchDir :: FilePath, pkgs :: [String] }
     | ConvertDb { appDir :: FilePath, inDbFile :: FilePath, outDbFile :: FilePath }
     | RemovePkg { appDir :: FilePath, dbFile :: FilePath, dryRun :: Bool, pkgs :: [String] }
+    | RenamePkg { appDir :: FilePath, dbFile :: FilePath, dryRun :: Bool, cmdRenamePkgs :: [(String, String)], cmdRenameClearPkgs :: [String] }
     deriving (Show, Data, Typeable)
 
 defCmdAdd = CmdAdd "" "" "" True [] [] [] [] []
@@ -98,7 +99,7 @@ defUrls =  Urls "" []
 defPkgBuild =  PkgBuild "" "" "" []
 defConvertDb = ConvertDb "" "" ""
 defRemovePkg = RemovePkg "" "" False []
-
+defRenamePkg = RenamePkg "" "" False [] []
 cfgGet f = liftM f ask
 
 -- {{{1 getFromURL
