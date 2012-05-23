@@ -1,5 +1,6 @@
 {-
  - Copyright 2011 Per Magnus Therning
+ - Copyright 2012 Per Matthew William Cox
  -
  - Licensed under the Apache License, Version 2.0 (the "License");
  - you may not use this file except in compliance with the License.
@@ -31,28 +32,10 @@ convertDb :: Command ()
 convertDb = do
     inDb <- cfgGet inDbFile >>= \ fn -> liftIO $ ODB.readDb fn
     outDbFn <- cfgGet outDbFile
-    newDb <- liftIO $ mapM doConvert inDb
+    let newDb = map doConvert inDb
     liftIO $ NDB.saveDb newDb outDbFn
 
-doConvert :: ODB.CblPkg -> IO NDB.CblPkg
-doConvert opkg@(n, (v, d, r))
-    | ODB.isBasePkg opkg = let
-            withNoStdBuffering f = do
-                old <- hGetBuffering stdin
-                hSetBuffering stdin NoBuffering
-                result <- f
-                hSetBuffering stdin old
-                return result
-            getValidChar = do
-                putStr " (g)hc or (d)istro? " >> hFlush stdout
-                getChar >>= (\ c -> putStrLn "" >> return c) >>= (\ c -> if c `elem` "gd" then return c else getValidChar)
-            createPkg c
-                | c == 'g' = return $ NDB.createGhcPkg n v
-                | c == 'd' = do
-                    putStr " release? " >> hFlush stdout
-                    rel <- getLine
-                    return $ NDB.createDistroPkg n v rel
-        in do
-            putStr n
-            withNoStdBuffering $ getValidChar >>= createPkg
-    | otherwise = return $ NDB.createRepoPkg n v d (show r)
+doConvert :: ODB.CblPkg -> NDB.CblPkg
+doConvert (n, ODB.GhcPkg v)      = (n, NDB.GhcPkg v)
+doConvert (n, ODB.DistroPkg v r) = (n, NDB.DistroPkg v r)
+doConvert (n, ODB.RepoPkg v d r) = (n, NDB.RepoPkg v d r Nothing)
