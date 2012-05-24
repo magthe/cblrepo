@@ -29,12 +29,17 @@ listPkgs :: Command ()
 listPkgs = do
     lG <- cfgGet listGhc
     lD <- cfgGet listDistro
+    lRn <- cfgGet listRename
     lR <- cfgGet noListRepo
     db <- cfgGet dbFile >>= liftIO . readDb
-    let pkgs = filter (pkgFilter lG lD lR) db
+    let pkgs = filter (pkgFilter lG lD lRn lR) db
     liftIO $ mapM_ printCblPkgShort pkgs
 
-pkgFilter g d r p = (g && isGhcPkg p) || (d && isDistroPkg p) || (not r && isRepoPkg p)
+pkgFilter g d rn r p = (not rn || isRenamePkg p) &&
+                            ((g && isGhcPkg p) ||
+                             (d && isDistroPkg p) ||
+                             (not r && isRepoPkg p))
 
 printCblPkgShort p =
-    putStrLn $ pkgName p ++ "  " ++ (display $ pkgVersion p) ++ "-" ++ pkgRelease p
+    putStrLn $ pkgName p ++ "  " ++ (display $ pkgVersion p) ++ "-" ++ pkgRelease p ++
+                 (if isRenamePkg p then " renamed " ++ archPackageName p else [])

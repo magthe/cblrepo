@@ -283,7 +283,7 @@ translate db pd = let
         pkgRel = maybe "1" pkgRelease (lookupPkg db hkgName)
         hasLib = maybe False (const True) (library pd)
         licFn = let l = licenseFile pd in if null l then Nothing else Just l
-        archName = (if hasLib then "haskell-" else "") ++ (map toLower hkgName)
+        archName = maybe (error "package not in database") archPackageName (lookupPkg db hkgName)
         pkgDesc = synopsis pd
         url = if null (homepage pd) then "http://hackage.haskell.org/package/${_hkgname}" else (homepage pd)
         lic = display (license pd)
@@ -321,10 +321,9 @@ calcExactDeps db pd = let
         lookupPkgVer = display . DB.pkgVersion . fromJust . lookupPkg db
         depString n = let
                 pkg = fromJust $ lookupPkg db n
-                name = map toLower $ DB.pkgName pkg
                 ver = display $ DB.pkgVersion pkg
                 rel = pkgRelease pkg
-            in "haskell-" ++ name ++ "=" ++ ver ++ "-" ++ rel
+            in archPackageName pkg ++ "=" ++ ver ++ "-" ++ rel
     in map depString deps
 
 -- {{{2 ghcPkgs

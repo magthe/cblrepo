@@ -1,5 +1,6 @@
 {-
  - Copyright 2011 Per Magnus Therning
+ - Copyright 2012 Per Matthew William Cox
  -
  - Licensed under the Apache License, Version 2.0 (the "License");
  - you may not use this file except in compliance with the License.
@@ -19,6 +20,7 @@ module PkgDB where
 -- {{{1 imports
 import Control.Exception as CE
 import Control.Monad
+import Data.Char ( toLower )
 import Data.Data
 import Data.List
 import Data.Maybe
@@ -38,7 +40,7 @@ _depVersionRange (P.Dependency _ vr) = vr
 data Pkg
     = GhcPkg { version :: V.Version }
     | DistroPkg { version :: V.Version, release :: String }
-    | RepoPkg { version :: V.Version, deps :: [P.Dependency], release :: String }
+    | RepoPkg { version :: V.Version, deps :: [P.Dependency], release :: String, repoName :: Maybe String }
     deriving (Eq, Show)
 
 type CblPkg = (String, Pkg)
@@ -62,10 +64,10 @@ pkgRelease (_, RepoPkg { release = r }) = r
 
 createGhcPkg n v = (n, GhcPkg v)
 createDistroPkg n v r = (n, DistroPkg v r)
-createRepoPkg n v d r = (n, RepoPkg v d r)
+createRepoPkg n v d r fn = (n, RepoPkg v d r fn)
 
 createCblPkg :: PackageDescription -> CblPkg
-createCblPkg pd = createRepoPkg name version deps "1"
+createCblPkg pd = createRepoPkg name version deps "1" Nothing
     where
         name = (\ (P.PackageName n) -> n) (P.pkgName $ package pd)
         version = P.pkgVersion $ package pd
@@ -85,6 +87,14 @@ isRepoPkg _ = False
 
 isBasePkg :: CblPkg -> Bool
 isBasePkg = not . isRepoPkg
+
+isRenamePkg :: CblPkg -> Bool
+isRenamePkg (_, RepoPkg { repoName = Just _ }) = True
+isRenamePkg _                                  = False
+
+archPackageName :: CblPkg -> String
+archPackageName (_, RepoPkg { repoName = Just rn }) = rn
+archPackageName (n, _)                              = "haskell-" ++ map toLower n
 
 -- {{{1 database
 emptyPkgDB :: CblDB
@@ -170,12 +180,26 @@ instance JSON P.Dependency where
         dep <- valFromObj "Dependency" obj
         maybe (fail "Not a Dependency object") return (simpleParse dep)
 
+-- Wrapper for serializing renames
+newtype RepoName = RepoName (Maybe String)
+instance JSON RepoName where
+    showJSON (RepoName ms) = makeObj [("RepoName", val)] where
+      val = case ms of Nothing -> JSNull
+                       Just s  -> JSString . toJSString $ s
+
+    readJSON object = do
+        obj <- readJSON object
+        repoName <- valFromObj "RepoName" obj
+        case repoName of JSNull     -> return . RepoName $ Nothing
+                         JSString s -> return . RepoName $ Just (fromJSString s)
+                         _          -> fail "Not a RepoName object"
+
 instance JSON Pkg where
     showJSON p@(GhcPkg { version = v}) = makeObj [("GhcPkg", showJSON v)]
     showJSON p@(DistroPkg { version = v, release = r}) =
         makeObj [("DistroPkg", showJSON (v, r))]
-    showJSON p@(RepoPkg { version = v, deps = d, release = r }) =
-        makeObj [("RepoPkg", showJSON (v, d, r))]
+    showJSON p@(RepoPkg { version = v, deps = d, release = r, repoName = rn }) =
+        makeObj [("RepoPkg", showJSON (v, d, r, RepoName rn))]
 
     readJSON object = let
             readGhc = do
@@ -190,7 +214,6 @@ instance JSON Pkg where
 
             readRepo = do
                 obj <- readJSON object
-                (v, d, r) <- valFromObj "RepoPkg" obj >>= readJSON
-                return $ RepoPkg v d r
-
+                (v, d, r, RepoName rn) <- valFromObj "RepoPkg" obj >>= readJSON
+                return $ RepoPkg v d r rn
         in readGhc `mplus` readDistro `mplus` readRepo `mplus` fail "Not a Pkg object"

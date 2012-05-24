@@ -1,0 +1,54 @@
+# a few tests to verify the rename command, run with `shelltest -w`
+
+# {{{1 set-up
+  rm -f cblrepo.db
+>>>= 0
+
+# add a package from a file
+cblrepo add -f tests/data/foo.cabal
+>>>
+>>>= 0
+
+cblrepo list
+>>>
+foo  1.2.3-1
+>>>= 0
+
+# Rename it
+cblrepo rename foo,zilch
+>>>
+>>>= 0
+
+# Check rename
+cblrepo list --rename
+>>>
+foo  1.2.3-1 renamed zilch
+>>>= 0
+
+# Add another package that depends on the renamed package
+cblrepo add -f tests/data/bar.cabal
+>>>
+>>>= 0
+
+cblrepo build foo
+>>>
+foo
+bar
+>>>= 0
+
+# Check the rename clear functionality
+cblrepo rename -c foo
+>>>
+>>>= 0
+
+# Verify it worked
+cblrepo list
+>>>
+bar  0-1
+foo  1.2.3-1
+>>>= 0
+
+# {{{1 clean-up
+# a bit of cleanup at the end
+  rm cblrepo.db
+>>>= 0

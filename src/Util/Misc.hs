@@ -79,12 +79,13 @@ data Cmds
     | BumpPkgs { appDir :: FilePath, dbFile :: FilePath, dryRun :: Bool, inclusive :: Bool, pkgs :: [String] }
     | Sync { appDir :: FilePath }
     | Versions { appDir :: FilePath, pkgs :: [String] }
-    | CmdListPkgs { appDir :: FilePath, dbFile :: FilePath, listGhc :: Bool, listDistro :: Bool, noListRepo :: Bool }
+    | CmdListPkgs { appDir :: FilePath, dbFile :: FilePath, listGhc :: Bool, listDistro :: Bool, listRename :: Bool, noListRepo :: Bool }
     | Updates { appDir :: FilePath, dbFile :: FilePath, idxStyle :: Bool }
     | Urls { appDir :: FilePath, pkgVers :: [(String, String)] }
     | PkgBuild { appDir :: FilePath, dbFile :: FilePath, patchDir :: FilePath, pkgs :: [String] }
     | ConvertDb { appDir :: FilePath, inDbFile :: FilePath, outDbFile :: FilePath }
     | RemovePkg { appDir :: FilePath, dbFile :: FilePath, dryRun :: Bool, pkgs :: [String] }
+    | RenamePkg { appDir :: FilePath, dbFile :: FilePath, dryRun :: Bool, cmdRenamePkgs :: [(String, String)], cmdRenameClearPkgs :: [String] }
     deriving (Show, Data, Typeable)
 
 defCmdAdd = CmdAdd "" "" "" True [] [] [] [] []
@@ -92,13 +93,13 @@ defBuildPkgs =  BuildPkgs "" "" []
 defBumpPkgs =  BumpPkgs "" "" False False []
 defSync =  Sync ""
 defVersions =  Versions "" []
-defCmdListPkgs =  CmdListPkgs "" "" False False False
+defCmdListPkgs =  CmdListPkgs "" "" False False False False
 defUpdates =  Updates "" "" False
 defUrls =  Urls "" []
 defPkgBuild =  PkgBuild "" "" "" []
 defConvertDb = ConvertDb "" "" ""
 defRemovePkg = RemovePkg "" "" False []
-
+defRenamePkg = RenamePkg "" "" False [] []
 cfgGet f = liftM f ask
 
 -- {{{1 getFromURL
