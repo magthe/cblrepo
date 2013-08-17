@@ -96,7 +96,7 @@ data Opts = Opts
 
 strPairArg s = let
         (s0, s1) = break (== ',') s
-    in return (s0, tail s1)
+    in if null s1 then error "Missing version" else return (s0, tail s1)
 strTripleArg s = let
         (s0, r1) = break (== ',') s
         (s1, r2) = break (== ',') (tail r1)
