@@ -184,7 +184,7 @@ instance Pretty ArchPkg where
                             text "--prefix=/usr --docdir=/usr/share/doc/${pkgname} \\" <$>
                             text "--libsubdir=\\$compiler/site-local/\\$pkgid" <> confFlags) <$>
                         text "runhaskell Setup build" <$>
-                        text "runhaskell Setup haddock" <$>
+                        text "runhaskell Setup haddock --hoogle --html" <$>
                         text "runhaskell Setup register --gen-script" <$>
                         text "runhaskell Setup unregister --gen-script" <$>
                         text "sed -i -r -e \"s|ghc-pkg.*unregister[^ ]* |&'--force' |\" unregister.sh"
