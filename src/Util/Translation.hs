@@ -160,7 +160,7 @@ instance Pretty ArchPkg where
             , text "arch=('i686' 'x86_64')"
             , pretty makeDepends
             , pretty depends
-            , text "options=('strip')"
+            , text "options=('strip' 'staticlibs')"
             , pretty source
             , maybe empty pretty install
             , pretty sha256sums
