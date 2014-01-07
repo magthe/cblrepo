@@ -85,7 +85,7 @@ The default location for patches is the dir `./patches`, but `cblrepo` can be to
 
 Patches for CABAL files and PKGBUILD files are applied using the pattern
 
-    patch <original file > <patch file>
+    patch <original file> <patch file>
 
 which means that the path depth in the patch is of no importance at all.  It is however important that these patches contain diffs for a single file only.
 
