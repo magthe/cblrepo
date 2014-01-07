@@ -76,6 +76,7 @@ In some, hopefully rare, cases the packages found on Hackage require patching in
 
 *Source patches* -- A patch `<patch dir>/<pkg name>.source` is included in the Arch Linux source package created with the `pkgbuild` command.
 
+The `<pkg name>` value is the exact name of the package as it appears in Hackage; e.g., `http://hackage.haskell.org/package/bindings-GLFW-3.0.3.2/bindings-GLFW.cabal` would have `bindings-GLFW` as the package name.
 The default location for patches is the dir `./patches`, but `cblrepo` can be told to look elsewhere by using the `--patchdir=` flag.
 
 ### Details of patches
