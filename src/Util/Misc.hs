@@ -79,6 +79,10 @@ readerGhcVersion arg = case lastMay $ readP_to_S parseVersion arg of
     Just (v, "") -> return v
     _ -> fail $ "cannot parse value `" ++ arg ++ "`"
 
+flagReader :: String -> ReadM (FlagName, Bool)
+flagReader ('-':xs) = return (FlagName xs, False)
+flagReader      xs  = return (FlagName xs, True)
+
 strPairArg :: Monad m => String -> m (String, String)
 strPairArg s = let
         (s0, s1) = break (== ',') s
@@ -97,7 +101,7 @@ optGet f = liftM f ask
 -- {{{1 command line argument type
 data Cmds
     = CmdAdd
-        { patchDir :: FilePath, ghcVer :: Version, cmdAddGhcPkgs :: [(String,String)]
+        { patchDir :: FilePath, ghcVer :: Version, flags :: FlagAssignment, cmdAddGhcPkgs :: [(String,String)]
         , cmdAddDistroPkgs :: [(String, String, String)], cmdAddUrlCbls :: [String]
         , cmdAddFileCbls :: [FilePath], cmdAddCbls :: [(String, String)] }
     | CmdBuildPkgs { pkgs :: [String] }
