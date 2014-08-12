@@ -219,10 +219,10 @@ readCabal patchDir loc tmpDir = let
         liftIO $ readPackageDescription silent cblFn
 
 -- {{{2 finalising
-finalizePkg ghcVersion db gpd = let
+finalizePkg ghcVersion db fa gpd = let
         n = ((\ (P.PackageName n) -> n ) . P.pkgName . package . packageDescription) gpd
     in finalizePackageDescription
-        [] -- no flags
+        fa
         (checkAgainstDb db n)
         (Platform X86_64 buildOS) -- platform
         (CompilerId GHC ghcVersion)  -- compiler version
