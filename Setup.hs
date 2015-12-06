@@ -17,5 +17,7 @@
  -}
 
 import Distribution.Simple
-
+/usr/share/doc/haskell-platform/README.Debian
+/usr/share/doc/haskell-platform/changelog.gz
+/usr/share/doc/haskell-platform/copyright
 main = defaultMain
