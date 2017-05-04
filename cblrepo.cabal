@@ -62,7 +62,7 @@ executable cblrepo
                    Unixutils ==1.54.*,
                    unix ==2.7.*,
                    ansi-wl-pprint ==0.6.*,
-                   aeson ==1.0.*,
+                   aeson >=1.0 && <1.3,
                    stringsearch ==0.3.*,
                    optparse-applicative ==0.13.*,
                    safe ==0.3.*,
