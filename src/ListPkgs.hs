@@ -1,4 +1,6 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE PatternGuards #-}
+{-# LANGUAGE ViewPatterns #-}
 {-
  - Copyright 2011 Per Magnus Therning
  -
@@ -23,6 +25,10 @@ import PkgDB
 import Control.Monad.Reader
 import Distribution.Text
 import Distribution.PackageDescription
+
+#if !MIN_VERSION_Cabal(2,0,0)
+unFlagName (FlagName name) = name
+#endif
 
 listPkgs :: Command ()
 listPkgs = do
@@ -57,8 +63,8 @@ printCblPkgNormal p =
             showFlagsIfPresent _p
                 | [] <- pkgFlags _p = ""
                 | fa <- pkgFlags _p = " (" ++ unwords (map showSingleFlag fa) ++ ")"
-            showSingleFlag (FlagName n, True) = n
-            showSingleFlag (FlagName n, False) = '-' : n
+            showSingleFlag (unFlagName -> n, True) = n
+            showSingleFlag (unFlagName -> n, False) = '-' : n
 
 printCblPkgHackage :: CblPkg -> IO ()
 printCblPkgHackage p =

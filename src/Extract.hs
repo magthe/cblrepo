@@ -25,8 +25,8 @@ import Util.Cfg
 import Control.Monad.Trans.Except
 import Control.Monad.Reader
 import qualified Data.ByteString.Lazy as BSL
-import Data.Version
 import Distribution.Text (display)
+import Distribution.Version
 import System.FilePath
 
 extract :: Command ()
