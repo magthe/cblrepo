@@ -1,5 +1,7 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ViewPatterns #-}
 {-
  - Copyright 2011 Per Magnus Therning
  -
@@ -30,10 +32,10 @@ import           Data.Char
 import           Data.List
 import           Data.Maybe
 import           Data.Monoid hiding ((<>))
-import           Data.Version
 import           Distribution.Package as P
 import           Distribution.PackageDescription as PD
 import           Distribution.Text
+import           Distribution.Version
 import           Prelude hiding ( (<$>) )
 import           System.Directory
 import           System.Exit
@@ -42,6 +44,17 @@ import           System.IO
 import           System.Process
 import           System.Unix.Directory
 import           Text.PrettyPrint.ANSI.Leijen hiding((</>))
+
+#if MIN_VERSION_Cabal(2,0,0)
+import Distribution.Package (mkPackageName)
+import Distribution.PackageDescription (mkFlagName, unFlagName)
+import Distribution.Text as T
+#else
+mkFlagName = FlagName
+unFlagName (FlagName name) = name
+mkPackageName = P.PackageName
+mkVersion a = Version a []
+#endif
 
 -- {{{1 ShQuotedString
 newtype ShQuotedString = ShQuotedString String
@@ -116,7 +129,7 @@ baseArchPkg = ArchPkg
     , apBuildPatch = Nothing
     , apShHkgName = ShVar "_hkgname" ""
     , apShPkgName = ShVar "pkgname" ""
-    , apShPkgVer = ShVar "_ver" (Version [] [])
+    , apShPkgVer = ShVar "_ver" (mkVersion [])
     , apShPkgRel = ShVar "pkgrel" 0
     , apShXRev = ShVar "_xrev" "0"
     , apShPkgDesc = ShVar "pkgdesc" (ShQuotedString "")
@@ -268,10 +281,14 @@ instance Pretty ArchInstall where
 
 -- {{{1 extra instances
 instance Pretty Version where
+#if MIN_VERSION_Cabal(2,0,0)
+    pretty = text . display
+#else
     pretty (Version b _) = encloseSep empty empty (char '.') (map pretty b)
+#endif
 
-prettyFlag (FlagName n, True) = text n
-prettyFlag (FlagName n, False) = text $ '-' : n
+prettyFlag (unFlagName -> n, True) = text n
+prettyFlag (unFlagName -> n, False) = text $ '-' : n
 
 -- {{{1 translate
 -- TODO:
@@ -279,7 +296,7 @@ prettyFlag (FlagName n, False) = text $ '-' : n
 translate :: Version -> Int -> CblDB -> FlagAssignment -> PackageDescription -> ArchPkg
 translate ghcVer ghcRel db fa pd = let
         ap = baseArchPkg
-        (PackageName hkgName) = packageName pd
+        hkgName = unPackageName $ packageName pd
         pkgVer = packageVersion pd
         pkgRel = maybe 1 pkgRelease (lookupPkg db hkgName)
         xrev = show $ Util.Dist.pkgXRev pd

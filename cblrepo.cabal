@@ -27,7 +27,8 @@ custom-setup
 executable cblrepo
     hs-source-dirs: src
     main-is: Main.hs
-    other-modules: Add
+    other-modules: Paths_cblrepo
+                   Add
                    BuildPkgs
                    BumpPkgs
                    ConvertDB
@@ -49,16 +50,16 @@ executable cblrepo
                    Util.Misc
                    Util.Translation
                    Versions
-    build-depends: base ==4.9.*,
+    build-depends: base <4.11,
                    filepath ==1.4.*,
                    directory ==1.3.*,
-                   Cabal ==1.24.*,
+                   Cabal <2.2,
                    transformers ==0.5.*,
                    bytestring ==0.10.*,
                    tar ==0.5.*,
                    zlib ==0.6.*,
                    mtl ==2.2.*,
-                   process ==1.4.*,
+                   process <1.7,
                    Unixutils ==1.54.*,
                    unix ==2.7.*,
                    ansi-wl-pprint ==0.6.*,

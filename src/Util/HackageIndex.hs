@@ -31,10 +31,10 @@ import qualified Data.ByteString.Lazy.UTF8 as BSLU
 import Data.List
 import qualified Data.Map as M
 import Data.Maybe
-import Data.Version
 import Distribution.PackageDescription
 import Distribution.PackageDescription.Parse
 import Distribution.Text
+import Distribution.Version
 import System.FilePath
 import Safe (atMay)
 

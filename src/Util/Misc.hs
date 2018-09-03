@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-
  - Copyright 2011-2015 Per Magnus Therning
@@ -27,12 +28,14 @@ import Control.Monad
 import Control.Monad.Trans.Except
 import Control.Monad.Reader
 import Data.Either
-import Data.Version
+import Data.List
+import qualified Data.Version as DV
 import Distribution.Compiler
 import Distribution.PackageDescription
 import Distribution.PackageDescription.Configuration
 import Distribution.System
 import Distribution.Text
+import Distribution.Version
 import Options.Applicative
 import Options.Applicative.Types
 import Safe (lastMay)
@@ -42,6 +45,10 @@ import System.Posix.Files
 import System.Process
 import System.Unix.Directory
 import Text.ParserCombinators.ReadP hiding (many)
+
+#if !MIN_VERSION_Cabal(2,0,0)
+mkFlagName = FlagName
+#endif
 
 -- {{{ print functions
 printUnSat (n, ds) = do
@@ -56,10 +63,24 @@ printBrksOth  ((n, v), brks) = do
 progName = "cblrepo"
 dbName = progName ++ ".db"
 
-ghcDefVersion = Version [8, 0, 2] []
+ghcDefVersion =
+#if __GLASGOW_HASKELL__ >= 802
+  mkVersion v
+#else
+  Version v []
+#endif
+  where
+    v = reverse $ unfoldr (\x -> if x == 0 then Nothing else Just (x `mod` 10, x `div` 10)) __GLASGOW_HASKELL__
+
 ghcDefRelease = 1 :: Int
 ghcVersionDep :: Version -> Int -> String
 ghcVersionDep ghcVer ghcRel = "ghc=" ++ display ghcVer ++ "-" ++ show ghcRel
+
+#if __GLASGOW_HASKELL__ >= 802
+parseVersion = (mkVersion . DV.versionBranch) <$> DV.parseVersion
+#else
+parseVersion = DV.parseVersion
+#endif
 
 -- {{{1 command line parser helpers
 readPkgNVersion :: ReadP (String, Version)
@@ -75,12 +96,12 @@ readFlag = readNegFlag <++ readPosFlag
         readNegFlag = do
             char '-'
             n <- many (satisfy (/= ','))
-            return (FlagName n, False)
+            return (mkFlagName n, False)
 
         readPosFlag = do
             n0 <- get
             n <- many (satisfy (/= ','))
-            return (FlagName (n0 : n), True)
+            return (mkFlagName (n0 : n), True)
 
 ghcVersionArgReader :: ReadM Version
 ghcVersionArgReader = do

@@ -1,3 +1,4 @@
+{-# LANGUAGE ViewPatterns #-}
 {-
  - Copyright 2014 Per Magnus Therning
  -
@@ -27,7 +28,7 @@ import Distribution.Version
 
 -- | Extract the name of a 'Dependency'.
 depName :: Dependency -> String
-depName (Dependency (PackageName n) _) = n
+depName (Dependency (unPackageName -> n) _) = n
 
 -- | Extract the version range from a 'Dependency'.
 depVersionRange :: Dependency -> VersionRange
@@ -36,9 +37,7 @@ depVersionRange (Dependency _ vr) = vr
 -- | Get the name from a 'Package', i.e. various variants of package
 -- descriptions.
 pkgNameStr :: Package pkg => pkg -> String
-pkgNameStr p = n
-    where
-        (PackageName n) = packageName p
+pkgNameStr = unPackageName . packageName
 
 -- | Get the "x-revision" from a 'PackageDescription'.
 pkgXRev :: PackageDescription -> Int

@@ -1,5 +1,7 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE ViewPatterns #-}
 
 {-
  - Copyright 2011-2015 Per Magnus Therning
@@ -30,6 +32,16 @@ import           Distribution.PackageDescription
 import qualified Distribution.Version as V
 import           Text.ParserCombinators.ReadP (readP_to_S)
 import qualified Data.Vector as Vec
+
+#if MIN_VERSION_Cabal(2,0,0)
+import Distribution.Package (mkPackageName)
+import Distribution.PackageDescription (mkFlagName, unFlagName)
+import Distribution.Text as T
+#else
+mkFlagName = FlagName
+unFlagName (FlagName name) = name
+mkPackageName = P.PackageName
+#endif
 
 data Pkg = GhcPkg GhcPkgD
          | DistroPkg DistroPkgD
@@ -74,19 +86,28 @@ instance Ord CblPkg where
 
 -- JSON instances
 version2Json :: V.Version -> Value
+#if MIN_VERSION_Cabal(2,0,0)
+version2Json = toJSON . T.display
+#else
 version2Json = toJSON . DV.showVersion
+#endif
 
 json2Version :: Value -> Parser V.Version
 json2Version = withText "Version" $ go . readP_to_S DV.parseVersion . unpack
   where
-    go [(v,[])] = return v
+    go [(v,[])] =
+#if MIN_VERSION_Cabal(2,0,0)
+      return . V.mkVersion $ DV.versionBranch v
+#else
+      return v
+#endif
     go (_ : xs) = go xs
     go _        = fail "could not parse Version"
 
 dependencyList2Json :: [P.Dependency] -> Value
 dependencyList2Json = toJSON . map convDep
   where
-    convDep (P.Dependency (P.PackageName n) vr)= (n, versionRange2Json vr)
+    convDep (P.Dependency (P.unPackageName -> n) vr)= (n, versionRange2Json vr)
 
 json2DependencyList :: Value -> Parser [P.Dependency]
 json2DependencyList = withArray "DependencyList" parseList
@@ -96,7 +117,7 @@ json2DependencyList = withArray "DependencyList" parseList
     parseDep a = do
       n <- withText "PackageName" (return . unpack) (a Vec.! 0)
       vr <- json2VersionRange (a Vec.! 1)
-      return $ P.Dependency (P.PackageName n) vr
+      return $ P.Dependency (mkPackageName n) vr
 
 versionRange2Json :: V.VersionRange -> Value
 versionRange2Json = V.foldVersionRange
@@ -135,7 +156,7 @@ json2VersionRange = withObject "VersionRange" go
 flagAssignment2Json :: FlagAssignment -> Value
 flagAssignment2Json = toJSON . map convFlag
   where
-    convFlag (FlagName s, b) = (s, b)
+    convFlag (unFlagName -> s, b) = (s, b)
 
 json2FlagAssignment :: Value -> Parser FlagAssignment
 json2FlagAssignment = withArray "FlagAssignment" parseList
@@ -145,7 +166,7 @@ json2FlagAssignment = withArray "FlagAssignment" parseList
     parseFlag a = do
       n <- withText "FlagName" (return . unpack) (a Vec.! 0)
       b <- withBool "FlagBool" return (a Vec.! 1)
-      return (FlagName n, b)
+      return (mkFlagName n, b)
 
 instance ToJSON GhcPkgD where
   toJSON (GhcPkgD v) = object ["gpVersion" .= version2Json v]
